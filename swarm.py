@@ -111,24 +111,38 @@ def main():
 	gamma = 0.755835
 	objective_function = Rastrigin
 	estimate_function = RastriginRand
-	useswarm = False
+	useswarm = True
 
-	runs = 50
+	runs = 100
 	dimmin = 2
 	dimmax = 20
 
 	all_candidates = []
 	all_swtimes = []
 	all_optimes = []
+	all_fracs = []
+
+	if True:	# pre-recorded (another 2 runs) of swarm / no swarm just optimization time for comparison
+		wswarm = [0.0012740349769592284, 0.0018128705024719237, 0.002379629611968994, 0.003147881031036377, 0.004097788333892822, 0.005007147789001465, 0.0058867716789245605, 0.00691429853439331, 0.007924890518188477, 0.009407808780670166, 0.010418932437896728, 0.012112195491790772, 0.01305190086364746, 0.014059579372406006, 0.016568405628204344, 0.018151302337646485, 0.019293146133422853, 0.02224048614501953, 0.02256796360015869]
+		noswarm = [0.0014391136169433594, 0.0020290064811706544, 0.002706201076507568, 0.003460264205932617, 0.004162876605987549, 0.0052107834815979005, 0.006288037300109863, 0.007382235527038574, 0.008549962043762207, 0.010081918239593505, 0.010951273441314698, 0.012684488296508789, 0.014555959701538087, 0.01631117343902588, 0.01852898597717285, 0.019497482776641845, 0.021971554756164552, 0.02350996494293213, 0.025964550971984864]plt.plot(list(range(dimmin,dimmax+1)), noswarm, label='SLSQP Time, no swarm')
+		plt.plot(list(range(dimmin,dimmax+1)), wswarm, label='SLSQP Time, w/ swarm')
+		plt.title("Numerical optimization time comparison")
+		plt.xlabel("Dimensions"); plt.ylabel("Time(s)")
+		plt.grid(alpha=0.25)
+		plt.legend()
+		plt.xticks(np.arange(dimmin, dimmax+1, 3))
+		plt.show()
 
 	tstart = time()
 	for dim in range(dimmin, dimmax+1):
+		print(dim)
 
 		successes = 0
 		candidates = []
 
 		swtimes = []
 		optimes = []
+		fracs = []
 
 		for run in range(runs):
 
@@ -154,12 +168,14 @@ def main():
 			if r.success:
 				successes += 1
 			sol = list(r.x)
+			fracs.append(swtime/(swtime + opttime))
 			candidates.append(sol)
 			swtimes.append(swtime)
 			optimes.append(opttime)
 
 		print(successes, end = ",")
 
+		all_fracs.append(fracs)
 		all_swtimes.append(swtimes)
 		all_candidates.append(candidates)
 		all_optimes.append(optimes)
@@ -199,14 +215,14 @@ def main():
 			plt.grid(alpha=0.25)
 			plt.show()
 
-	if True:	# pre-recorded (another 2 runs) of swarm / no swarm just optimization time for comparison
-		noswarm = [0.0014448165893554688, 0.0020198869705200196, 0.0026935863494873045, 0.003578486442565918, 0.004273009300231933, 0.0054088163375854495, 0.006421494483947754, 0.007585391998291015, 0.008629636764526367, 0.010160503387451171, 0.011383366584777833, 0.013118438720703125, 0.014735951423645019, 0.016631059646606446, 0.018530259132385252, 0.020533361434936524, 0.021467452049255372, 0.024426770210266114, 0.026252875328063963] #op time
-		wswarm = [0.0012622976303100586, 0.001781315803527832, 0.0022946834564208985, 0.0029517793655395507, 0.0037638521194458007, 0.0047770881652832034, 0.005657095909118653, 0.006435022354125976, 0.007943148612976075, 0.008978629112243652, 0.01001434326171875, 0.011233439445495605, 0.012720398902893067, 0.014568924903869629, 0.015770702362060546, 0.01770277500152588, 0.01858201026916504, 0.020037641525268556, 0.02331798553466797] # op time
-		plt.plot(list(range(dimmin,dimmax+1)), noswarm, label='SLSQP Time, no swarm')
-		plt.plot(list(range(dimmin,dimmax+1)), wswarm, label='SLSQP Time, w/ swarm')
+		avg_frac = [sum(dim_list)/len(dim_list) for dim_list in all_fracs]
+		plt.plot(list(range(dimmin,dimmax+1)), avg_frac)
 		plt.legend()
+		plt.title(f"Swarm Time Percentage of Total Time (avg. {runs} runs, {'w/ swarm' if useswarm else 'no swarm'})"); plt.xlabel("Dimensions"); plt.ylabel("Percentage")
 		plt.xticks(np.arange(dimmin, dimmax+1, 3))
+		plt.grid(alpha=0.25)
 		plt.show()
+
 
 if __name__== "__main__":
 	main()
